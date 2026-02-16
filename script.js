@@ -14,11 +14,12 @@ const resultMessage = document.getElementById("result-message");
 const restartButton = document.getElementById("restart-btn");
 const progressBar = document.getElementById("progress");
 
-
 const categorySelect = document.getElementById("category-select");
-const STORAGE_KEY = 'quizCategory';
+const STORAGE_KEY_CATEGORY = 'quizCategory';
+const STORAGE_KEY_QUESTIONS = 'quizQuestions';
 
-const quizQuestions = [
+// Default questions
+const DEFAULT_QUESTIONS = [
     {
         question: "what is the capital of france ?",
         category: "Geography",
@@ -61,6 +62,9 @@ const quizQuestions = [
     },
 ];
 
+// Load questions from localStorage if available, otherwise use defaults
+const quizQuestions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUESTIONS)) || DEFAULT_QUESTIONS;
+
 let filteredQuestions = [];
 //quiz state vars
 let currentQuestionIndex = 0;
@@ -75,7 +79,7 @@ startButton.addEventListener("click", startQuiz);
 if (categorySelect) {
     categorySelect.addEventListener("change", () => {
         try {
-            localStorage.setItem(STORAGE_KEY, categorySelect.value);
+            localStorage.setItem(STORAGE_KEY_CATEGORY, categorySelect.value);
         } catch (e) {
             // ignore storage errors
         }
@@ -212,8 +216,6 @@ function populateCategoryOptions() {
     if (!categorySelect) return;
     const categories = Array.from(new Set(quizQuestions.map(q => q.category))).sort();
     // remove existing non-'all' options
-    categorySelect.innerHTML = '<option value="all">All Categories</option>';
-    // add options with per-category counts
     const total = quizQuestions.length;
     categorySelect.innerHTML = `<option value="all">All Categories (${total})</option>`;
     categories.forEach(cat => {
@@ -225,7 +227,7 @@ function populateCategoryOptions() {
     });
     // restore previously selected category if present
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_KEY_CATEGORY);
         if (saved) {
             const optionExists = Array.from(categorySelect.options).some(o => o.value === saved);
             if (optionExists) categorySelect.value = saved;
@@ -234,193 +236,8 @@ function populateCategoryOptions() {
         // ignore storage errors
     }
 
-    // ensure option labels reflect current quizQuestions counts
-    refreshCategoryOptionCounts();
     updateCategoryCount();
 }
-
-function refreshCategoryOptionCounts() {
-    if (!categorySelect) return;
-    const total = quizQuestions.length;
-    Array.from(categorySelect.options).forEach(opt => {
-        if (opt.value === 'all') {
-            opt.textContent = `All Categories (${total})`;
-        } else {
-            const count = quizQuestions.filter(q => q.category === opt.value).length;
-            opt.textContent = `${opt.value} (${count})`;
-        }
-    });
-}
-
-// expose for external updates when quizQuestions change dynamically
-if (typeof window !== 'undefined') window.refreshCategoryOptionCounts = refreshCategoryOptionCounts;
-
-function addQuestion(questionObj) {
-    if (!questionObj || !questionObj.question) return { ok: false, reason: 'invalid' };
-    const normalized = questionObj.question.trim().toLowerCase();
-    const duplicate = quizQuestions.some(q => (q.question || '').trim().toLowerCase() === normalized);
-    if (duplicate) return { ok: false, reason: 'duplicate' };
-    quizQuestions.push(questionObj);
-    populateCategoryOptions();
-    try {
-        // save current selection
-        localStorage.setItem(STORAGE_KEY, categorySelect.value);
-    } catch (e) { }
-    return { ok: true };
-}
-
-function removeQuestion(index) {
-    if (typeof index !== 'number') return false;
-    if (index < 0 || index >= quizQuestions.length) return false;
-    const removed = quizQuestions.splice(index, 1);
-    populateCategoryOptions();
-    // if saved category no longer exists, reset to 'all'
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const exists = Array.from(categorySelect.options).some(o => o.value === saved);
-        if (!exists) {
-            categorySelect.value = 'all';
-            localStorage.setItem(STORAGE_KEY, 'all');
-        }
-    } catch (e) { }
-    updateCategoryCount();
-    return removed;
-}
-
-function removeQuestionsByCategory(cat) {
-    if (!cat) return 0;
-    let removed = 0;
-    for (let i = quizQuestions.length - 1; i >= 0; i--) {
-        if (quizQuestions[i].category === cat) {
-            quizQuestions.splice(i, 1);
-            removed++;
-        }
-    }
-    if (removed) {
-        populateCategoryOptions();
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            const exists = Array.from(categorySelect.options).some(o => o.value === saved);
-            if (!exists) {
-                categorySelect.value = 'all';
-                localStorage.setItem(STORAGE_KEY, 'all');
-            }
-        } catch (e) { }
-        updateCategoryCount();
-    }
-    return removed;
-}
-
-// expose mutators for external UI code
-if (typeof window !== 'undefined') {
-    window.addQuestion = addQuestion;
-    window.removeQuestion = removeQuestion;
-    window.removeQuestionsByCategory = removeQuestionsByCategory;
-}
-
-// Admin UI wiring
-const adminToggle = document.getElementById('admin-toggle');
-const adminPanel = document.getElementById('admin-panel');
-const adminQuestion = document.getElementById('admin-question');
-const adminCategory = document.getElementById('admin-category');
-const adminAns = [
-    document.getElementById('admin-ans-0'),
-    document.getElementById('admin-ans-1'),
-    document.getElementById('admin-ans-2'),
-    document.getElementById('admin-ans-3')
-].filter(el => el !== null);
-const addQuestionBtn = document.getElementById('add-question-btn');
-const questionList = document.getElementById('question-list');
-const removeByCategoryInput = document.getElementById('admin-remove-category');
-const removeByCategoryBtn = document.getElementById('remove-by-category-btn');
-
-if (adminToggle && adminPanel) {
-    adminToggle.addEventListener('click', () => {
-        const shown = !adminPanel.hidden;
-        adminPanel.hidden = shown;
-        adminToggle.textContent = shown ? 'Show Admin' : 'Hide Admin';
-    });
-}
-
-function renderQuestionList() {
-    if (!questionList) return;
-    questionList.innerHTML = '';
-    quizQuestions.forEach((q, i) => {
-        const li = document.createElement('li');
-        const text = document.createElement('span');
-        text.textContent = `${i}: ${q.question} [${q.category}]`;
-        const btn = document.createElement('button');
-        btn.textContent = 'Remove';
-        btn.addEventListener('click', () => {
-            removeQuestion(i);
-            renderQuestionList();
-        });
-        li.appendChild(text);
-        li.appendChild(btn);
-        questionList.appendChild(li);
-    });
-}
-
-if (addQuestionBtn) {
-    addQuestionBtn.addEventListener('click', () => {
-        if (adminAns.length < 4) {
-            alert('Admin UI elements not fully loaded');
-            return;
-        }
-        const qText = adminQuestion.value && adminQuestion.value.trim();
-        const cat = adminCategory.value && adminCategory.value.trim() || 'Uncategorized';
-        if (!qText) {
-            alert('Please enter a question');
-            return;
-        }
-        const answers = adminAns.map((el, idx) => ({ text: el.value || '', correct: false }));
-        const correctRadio = document.querySelector('input[name="admin-correct"]:checked');
-        const correctIndex = correctRadio ? Number(correctRadio.value) : 0;
-        if (!answers.some(a => a.text.trim())) {
-            alert('Please provide at least one answer');
-            return;
-        }
-        answers.forEach(a => a.text = a.text.trim());
-        if (answers[correctIndex] && answers[correctIndex].text) answers[correctIndex].correct = true;
-        const questionObj = { question: qText, category: cat, answers };
-        const res = addQuestion(questionObj);
-        if (res && res.ok) {
-            adminQuestion.value = '';
-            adminCategory.value = '';
-            adminAns.forEach(a => a.value = '');
-            renderQuestionList();
-            // set select to new category
-            try { categorySelect.value = cat; localStorage.setItem(STORAGE_KEY, cat); } catch (e) { }
-            updateCategoryCount();
-            refreshCategoryOptionCounts();
-            alert('Question added');
-        } else {
-            if (res && res.reason === 'duplicate') {
-                alert('Duplicate question detected — not added.');
-            } else {
-                alert('Failed to add question');
-            }
-        }
-    });
-}
-
-if (removeByCategoryBtn) {
-    removeByCategoryBtn.addEventListener('click', () => {
-        const cat = removeByCategoryInput.value && removeByCategoryInput.value.trim();
-        if (!cat) {
-            alert('Enter a category to remove');
-            return;
-        }
-        const removed = removeQuestionsByCategory(cat);
-        renderQuestionList();
-        refreshCategoryOptionCounts();
-        updateCategoryCount();
-        alert(`Removed ${removed} question(s) from category "${cat}"`);
-    });
-}
-
-// initial render of question list
-renderQuestionList();
 
 function updateCategoryCount() {
     if (!categorySelect) return;

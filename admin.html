@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h1 {
+            color: #e86a33;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div id="login-screen">
+            <div style="max-width: 400px; margin: 60px auto; text-align: center;">
+                <h2>Admin Access</h2>
+                <input id="login-password" type="password" placeholder="Enter password"
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 12px; font-size: 1rem;">
+                <button id="login-btn" style="width: 100%; padding: 12px; font-size: 1rem;">Login</button>
+            </div>
+        </div>
+
+        <div id="admin-screen" hidden>
+            <div class="admin-header">
+                <h1>Quiz Admin Panel</h1>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+
+            <div class="admin-panel" style="margin-top: 0; border-radius: 0;">
+                <h3>Question Editor</h3>
+                <label>Question
+                    <textarea id="admin-question" rows="2"></textarea>
+                </label>
+                <label>Category
+                    <input id="admin-category" type="text" placeholder="e.g. Geography">
+                </label>
+                <div class="admin-answers">
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="0" checked>
+                        <input type="text" id="admin-ans-0" placeholder="Answer 1">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="1">
+                        <input type="text" id="admin-ans-1" placeholder="Answer 2">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="2">
+                        <input type="text" id="admin-ans-2" placeholder="Answer 3">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="3">
+                        <input type="text" id="admin-ans-3" placeholder="Answer 4">
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button id="add-question-btn">Add Question</button>
+                </div>
+                <hr>
+                <h4>Existing Questions</h4>
+                <ul id="question-list" class="question-list"></ul>
+                <div class="admin-remove">
+                    <input id="admin-remove-category" type="text" placeholder="Category to remove">
+                    <button id="remove-by-category-btn">Remove By Category</button>
+                </div>
+                <hr>
+                <h4>Security</h4>
+                <div style="padding: 12px; background: #f8f0e5; border-radius: 6px;">
+                    <div style="margin-bottom: 12px;">
+                        <label>Current Password
+                            <input id="current-password" type="password"
+                                style="width: 100%; padding: 8px; margin-top: 4px;">
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>New Password
+                            <input id="new-password" type="password"
+                                style="width: 100%; padding: 8px; margin-top: 4px;">
+                        </label>
+                    </div>
+                    <button id="change-password-btn" style="width: 100%; padding: 10px; margin-bottom: 8px;">Change
+                        Password</button>
+                    <button id="reset-password-btn"
+                        style="width: 100%; padding: 10px; background: #ffc107; color: #333;">Reset to Default
+                        (admin)</button>
+                </div>
+                <hr>
+                <p style="text-align: center; margin-top: 20px;"><a href="index.html">Back to Quiz</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Shared data and functions with main quiz
+        const DEFAULT_PASSWORD = 'admin';
+        const STORAGE_KEY_PASSWORD = 'quizAdminPassword';
+        const STORAGE_KEY = 'quizQuestions';
+
+        // Load password from localStorage or use default
+        let currentPassword = localStorage.getItem(STORAGE_KEY_PASSWORD) || DEFAULT_PASSWORD;
+
+        // Load questions from localStorage or use defaults
+        let quizQuestions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+            {
+                question: "what is the capital of france ?",
+                category: "Geography",
+                answers: [
+                    { text: "London", correct: false },
+                    { text: "Berlin", correct: false },
+                    { text: "Paris", correct: true },
+                    { text: "Madrid", correct: false },
+                ],
+            },
+            {
+                question: "Which planet is known as the red planet?",
+                category: "Science",
+                answers: [
+                    { text: "Mars", correct: true },
+                    { text: "Jupiter", correct: false },
+                    { text: "Saturn", correct: false },
+                    { text: "Neptune", correct: false },
+                ],
+            },
+            {
+                question: "What is the name of the largest ocean on Earth ?",
+                category: "Geography",
+                answers: [
+                    { text: "Pacific ocean", correct: true },
+                    { text: "Atlantic ocean", correct: false },
+                    { text: "Indian ocean", correct: false },
+                    { text: "Arctic ocean", correct: false },
+                ],
+            },
+            {
+                question: "Which programming language is the easiest to learn ?",
+                category: "Programming",
+                answers: [
+                    { text: "C++", correct: false },
+                    { text: "Javascript", correct: false },
+                    { text: "Python", correct: true },
+                    { text: "C", correct: false },
+                ],
+            },
+        ];
+
+        const loginScreen = document.getElementById('login-screen');
+        const adminScreen = document.getElementById('admin-screen');
+        const loginPassword = document.getElementById('login-password');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const adminQuestion = document.getElementById('admin-question');
+        const adminCategory = document.getElementById('admin-category');
+        const adminAns = [
+            document.getElementById('admin-ans-0'),
+            document.getElementById('admin-ans-1'),
+            document.getElementById('admin-ans-2'),
+            document.getElementById('admin-ans-3')
+        ];
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const questionList = document.getElementById('question-list');
+        const removeByCategoryInput = document.getElementById('admin-remove-category');
+        const removeByCategoryBtn = document.getElementById('remove-by-category-btn');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const resetPasswordBtn = document.getElementById('reset-password-btn');
+        const currentPasswordInput = document.getElementById('current-password');
+        const newPasswordInput = document.getElementById('new-password');
+
+        loginBtn.addEventListener('click', () => {
+            if (loginPassword.value === currentPassword) {
+                loginScreen.hidden = true;
+                adminScreen.hidden = false;
+                renderQuestionList();
+                loginPassword.value = '';
+            } else {
+                alert('Incorrect password');
+                loginPassword.value = '';
+                loginPassword.focus();
+            }
+        });
+
+        loginPassword.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loginBtn.click();
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            adminScreen.hidden = true;
+            loginScreen.hidden = false;
+            loginPassword.focus();
+        });
+
+        changePasswordBtn.addEventListener('click', () => {
+            const curr = currentPasswordInput.value.trim();
+            const newPass = newPasswordInput.value.trim();
+            if (!curr || !newPass) {
+                alert('Please fill in both fields');
+                return;
+            }
+            if (curr !== currentPassword) {
+                alert('Current password is incorrect');
+                currentPasswordInput.value = '';
+                return;
+            }
+            if (newPass.length < 4) {
+                alert('New password must be at least 4 characters');
+                return;
+            }
+            currentPassword = newPass;
+            localStorage.setItem(STORAGE_KEY_PASSWORD, newPass);
+            alert('Password changed successfully');
+            currentPasswordInput.value = '';
+            newPasswordInput.value = '';
+        });
+
+        resetPasswordBtn.addEventListener('click', () => {
+            if (confirm('Reset admin password to default (admin)?')) {
+                currentPassword = DEFAULT_PASSWORD;
+                localStorage.setItem(STORAGE_KEY_PASSWORD, DEFAULT_PASSWORD);
+                alert('Password reset to default: admin');
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
+            }
+        });
+
+        function addQuestion(questionObj) {
+            if (!questionObj || !questionObj.question) return { ok: false, reason: 'invalid' };
+            const normalized = questionObj.question.trim().toLowerCase();
+            const duplicate = quizQuestions.some(q => (q.question || '').trim().toLowerCase() === normalized);
+            if (duplicate) return { ok: false, reason: 'duplicate' };
+            quizQuestions.push(questionObj);
+            saveQuestions();
+            return { ok: true };
+        }
+
+        function removeQuestion(index) {
+            if (typeof index !== 'number' || index < 0 || index >= quizQuestions.length) return false;
+            quizQuestions.splice(index, 1);
+            saveQuestions();
+            return true;
+        }
+
+        function removeQuestionsByCategory(cat) {
+            if (!cat) return 0;
+            let removed = 0;
+            for (let i = quizQuestions.length - 1; i >= 0; i--) {
+                if (quizQuestions[i].category === cat) {
+                    quizQuestions.splice(i, 1);
+                    removed++;
+                }
+            }
+            if (removed) saveQuestions();
+            return removed;
+        }
+
+        function saveQuestions() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(quizQuestions));
+            } catch (e) { }
+        }
+
+        function renderQuestionList() {
+            questionList.innerHTML = '';
+            quizQuestions.forEach((q, i) => {
+                const li = document.createElement('li');
+                const text = document.createElement('span');
+                text.textContent = `${i}: ${q.question} [${q.category}]`;
+                const btn = document.createElement('button');
+                btn.textContent = 'Remove';
+                btn.addEventListener('click', () => {
+                    if (confirm(`Remove: "${q.question}"?`)) {
+                        removeQuestion(i);
+                        renderQuestionList();
+                    }
+                });
+                li.appendChild(text);
+                li.appendChild(btn);
+                questionList.appendChild(li);
+            });
+        }
+
+        if (addQuestionBtn) {
+            addQuestionBtn.addEventListener('click', () => {
+                const qText = (adminQuestion.value || '').trim();
+                const cat = (adminCategory.value || '').trim() || 'Uncategorized';
+                if (!qText) {
+                    alert('Please enter a question');
+                    return;
+                }
+                const answers = adminAns.map((el) => ({ text: (el.value || '').trim(), correct: false }));
+                const correctRadio = document.querySelector('input[name="admin-correct"]:checked');
+                const correctIndex = correctRadio ? Number(correctRadio.value) : 0;
+                if (!answers.some(a => a.text)) {
+                    alert('Please provide at least one answer');
+                    return;
+                }
+                if (answers[correctIndex]) answers[correctIndex].correct = true;
+                const questionObj = { question: qText, category: cat, answers };
+                const res = addQuestion(questionObj);
+                if (res && res.ok) {
+                    adminQuestion.value = '';
+                    adminCategory.value = '';
+                    adminAns.forEach(a => a.value = '');
+                    renderQuestionList();
+                    alert('Question added');
+                } else if (res && res.reason === 'duplicate') {
+                    alert('Duplicate question detected — not added.');
+                } else {
+                    alert('Failed to add question');
+                }
+            });
+        }
+
+        if (removeByCategoryBtn) {
+            removeByCategoryBtn.addEventListener('click', () => {
+                const cat = (removeByCategoryInput.value || '').trim();
+                if (!cat) {
+                    alert('Enter a category to remove');
+                    return;
+                }
+                if (!confirm(`Remove all ${cat} questions?`)) return;
+                const removed = removeQuestionsByCategory(cat);
+                renderQuestionList();
+                removeByCategoryInput.value = '';
+                alert(`Removed ${removed} question(s) from category "${cat}"`);
+            });
+        }
+    </script>
+</body>
+
+</html>
