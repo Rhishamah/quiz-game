@@ -256,14 +256,17 @@ function refreshCategoryOptionCounts() {
 if (typeof window !== 'undefined') window.refreshCategoryOptionCounts = refreshCategoryOptionCounts;
 
 function addQuestion(questionObj) {
-    if (!questionObj || !questionObj.question) return false;
+    if (!questionObj || !questionObj.question) return { ok: false, reason: 'invalid' };
+    const normalized = questionObj.question.trim().toLowerCase();
+    const duplicate = quizQuestions.some(q => (q.question || '').trim().toLowerCase() === normalized);
+    if (duplicate) return { ok: false, reason: 'duplicate' };
     quizQuestions.push(questionObj);
     populateCategoryOptions();
     try {
         // save current selection
         localStorage.setItem(STORAGE_KEY, categorySelect.value);
     } catch (e) { }
-    return true;
+    return { ok: true };
 }
 
 function removeQuestion(index) {
@@ -325,7 +328,7 @@ const adminAns = [
     document.getElementById('admin-ans-1'),
     document.getElementById('admin-ans-2'),
     document.getElementById('admin-ans-3')
-];
+].filter(el => el !== null);
 const addQuestionBtn = document.getElementById('add-question-btn');
 const questionList = document.getElementById('question-list');
 const removeByCategoryInput = document.getElementById('admin-remove-category');
@@ -360,6 +363,10 @@ function renderQuestionList() {
 
 if (addQuestionBtn) {
     addQuestionBtn.addEventListener('click', () => {
+        if (adminAns.length < 4) {
+            alert('Admin UI elements not fully loaded');
+            return;
+        }
         const qText = adminQuestion.value && adminQuestion.value.trim();
         const cat = adminCategory.value && adminCategory.value.trim() || 'Uncategorized';
         if (!qText) {
@@ -376,8 +383,8 @@ if (addQuestionBtn) {
         answers.forEach(a => a.text = a.text.trim());
         if (answers[correctIndex] && answers[correctIndex].text) answers[correctIndex].correct = true;
         const questionObj = { question: qText, category: cat, answers };
-        const ok = addQuestion(questionObj);
-        if (ok) {
+        const res = addQuestion(questionObj);
+        if (res && res.ok) {
             adminQuestion.value = '';
             adminCategory.value = '';
             adminAns.forEach(a => a.value = '');
@@ -388,7 +395,11 @@ if (addQuestionBtn) {
             refreshCategoryOptionCounts();
             alert('Question added');
         } else {
-            alert('Failed to add question');
+            if (res && res.reason === 'duplicate') {
+                alert('Duplicate question detected — not added.');
+            } else {
+                alert('Failed to add question');
+            }
         }
     });
 }
