@@ -44,7 +44,11 @@
                 <h2>Admin Access</h2>
                 <input id="login-password" type="password" placeholder="Enter password"
                     style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 12px; font-size: 1rem;">
-                <button id="login-btn" style="width: 100%; padding: 12px; font-size: 1rem;">Login</button>
+                <button id="login-btn"
+                    style="width: 100%; padding: 12px; font-size: 1rem; margin-bottom: 8px;">Login</button>
+                <button id="forgot-password-btn"
+                    style="width: 100%; padding: 12px; font-size: 0.95rem; background: #6c757d;">Forgot
+                    Password?</button>
             </div>
         </div>
 
@@ -93,6 +97,11 @@
                 <hr>
                 <h4>Security</h4>
                 <div style="padding: 12px; background: #f8f0e5; border-radius: 6px;">
+                    <div
+                        style="margin-bottom: 12px; padding: 10px; background: #fff; border-left: 4px solid #e86a33; border-radius: 3px;">
+                        <strong>Current Security Question:</strong><br>
+                        <div id="current-security-question" style="margin-top: 6px; font-style: italic;"></div>
+                    </div>
                     <div style="margin-bottom: 12px;">
                         <label>Current Password
                             <input id="current-password" type="password"
@@ -105,11 +114,20 @@
                                 style="width: 100%; padding: 8px; margin-top: 4px;">
                         </label>
                     </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>New Security Question (optional - leave blank to keep current)
+                            <input id="security-question" type="text" placeholder="e.g., What is your pet's name?"
+                                style="width: 100%; padding: 8px; margin-top: 4px;">
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label>New Security Answer (optional - leave blank to keep current)
+                            <input id="security-answer" type="password" placeholder="Answer"
+                                style="width: 100%; padding: 8px; margin-top: 4px;">
+                        </label>
+                    </div>
                     <button id="change-password-btn" style="width: 100%; padding: 10px; margin-bottom: 8px;">Change
                         Password</button>
-                    <button id="reset-password-btn"
-                        style="width: 100%; padding: 10px; background: #ffc107; color: #333;">Reset to Default
-                        (admin)</button>
                 </div>
                 <hr>
                 <p style="text-align: center; margin-top: 20px;"><a href="index.html">Back to Quiz</a></p>
@@ -121,10 +139,14 @@
         // Shared data and functions with main quiz
         const DEFAULT_PASSWORD = 'admin';
         const STORAGE_KEY_PASSWORD = 'quizAdminPassword';
+        const STORAGE_KEY_SECURITY_Q = 'quizSecurityQuestion';
+        const STORAGE_KEY_SECURITY_A = 'quizSecurityAnswer';
         const STORAGE_KEY = 'quizQuestions';
 
-        // Load password from localStorage or use default
+        // Load password and security info from localStorage
         let currentPassword = localStorage.getItem(STORAGE_KEY_PASSWORD) || DEFAULT_PASSWORD;
+        let securityQuestion = localStorage.getItem(STORAGE_KEY_SECURITY_Q) || 'What is your pet\'s name?';
+        let securityAnswer = localStorage.getItem(STORAGE_KEY_SECURITY_A) || 'default';
 
         // Load questions from localStorage or use defaults
         let quizQuestions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
@@ -188,16 +210,32 @@
         const removeByCategoryInput = document.getElementById('admin-remove-category');
         const removeByCategoryBtn = document.getElementById('remove-by-category-btn');
         const changePasswordBtn = document.getElementById('change-password-btn');
-        const resetPasswordBtn = document.getElementById('reset-password-btn');
         const currentPasswordInput = document.getElementById('current-password');
         const newPasswordInput = document.getElementById('new-password');
+        const securityQuestionInput = document.getElementById('security-question');
+        const securityAnswerInput = document.getElementById('security-answer');
+        const forgotPasswordBtn = document.getElementById('forgot-password-btn');
+        const currentSecurityQuestionDisplay = document.getElementById('current-security-question');
+
+        function updateSecurityQuestionDisplay() {
+            if (currentSecurityQuestionDisplay) {
+                currentSecurityQuestionDisplay.textContent = securityQuestion || '(none set)';
+            }
+        }
 
         loginBtn.addEventListener('click', () => {
             if (loginPassword.value === currentPassword) {
                 loginScreen.hidden = true;
                 adminScreen.hidden = false;
                 renderQuestionList();
+                updateSecurityQuestionDisplay();
                 loginPassword.value = '';
+                // Clear security fields on login - don't pre-populate to avoid confusion
+                securityAnswerInput.value = '';
+                securityQuestionInput.value = '';
+                // Clear password fields too
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
             } else {
                 alert('Incorrect password');
                 loginPassword.value = '';
@@ -215,11 +253,37 @@
             loginPassword.focus();
         });
 
+        forgotPasswordBtn.addEventListener('click', () => {
+            // Only ask the security question, not the answer
+            const answer = prompt(securityQuestion + '\n\nAnswer:');
+            if (answer === null) return; // User cancelled
+            // Check answer securely (never display the correct answer)
+            if (answer.trim().toLowerCase() === securityAnswer.toLowerCase()) {
+                const newPass = prompt('Enter your new password (minimum 4 characters):');
+                if (newPass === null) return;
+                if (newPass.trim().length < 4) {
+                    alert('Password must be at least 4 characters');
+                    return;
+                }
+                currentPassword = newPass.trim();
+                localStorage.setItem(STORAGE_KEY_PASSWORD, currentPassword);
+                loginScreen.hidden = false;
+                adminScreen.hidden = true;
+                loginPassword.value = '';
+                loginPassword.focus();
+                alert('Password reset successfully!');
+            } else {
+                alert('Incorrect security answer');
+            }
+        });
+
         changePasswordBtn.addEventListener('click', () => {
             const curr = currentPasswordInput.value.trim();
             const newPass = newPasswordInput.value.trim();
+            const secQ = securityQuestionInput.value.trim();
+            const secA = securityAnswerInput.value.trim();
             if (!curr || !newPass) {
-                alert('Please fill in both fields');
+                alert('Please fill in password fields');
                 return;
             }
             if (curr !== currentPassword) {
@@ -231,21 +295,26 @@
                 alert('New password must be at least 4 characters');
                 return;
             }
+            // Allow optional security info updates (if provided)
+            if ((secQ && !secA) || (!secQ && secA)) {
+                alert('Please provide both a security question AND answer, or leave both blank to keep current settings');
+                return;
+            }
             currentPassword = newPass;
+            if (secQ && secA) {
+                securityQuestion = secQ;
+                securityAnswer = secA;
+                localStorage.setItem(STORAGE_KEY_SECURITY_Q, secQ);
+                localStorage.setItem(STORAGE_KEY_SECURITY_A, secA);
+            }
             localStorage.setItem(STORAGE_KEY_PASSWORD, newPass);
-            alert('Password changed successfully');
+            alert('Password' + (secQ ? ' and security info' : '') + ' updated successfully');
             currentPasswordInput.value = '';
             newPasswordInput.value = '';
-        });
-
-        resetPasswordBtn.addEventListener('click', () => {
-            if (confirm('Reset admin password to default (admin)?')) {
-                currentPassword = DEFAULT_PASSWORD;
-                localStorage.setItem(STORAGE_KEY_PASSWORD, DEFAULT_PASSWORD);
-                alert('Password reset to default: admin');
-                currentPasswordInput.value = '';
-                newPasswordInput.value = '';
-            }
+            securityQuestionInput.value = '';
+            securityAnswerInput.value = '';
+            // Refresh the display of current security question
+            updateSecurityQuestionDisplay();
         });
 
         function addQuestion(questionObj) {
