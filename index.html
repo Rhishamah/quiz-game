@@ -13,7 +13,52 @@
         <div class="screen active" id="start-screen">
             <h1>Quiz Time!</h1>
             <p>Test your knowledge with these fun questions</p>
+            <div class="category-select">
+                <label for="category-select">Choose category:</label>
+                <select id="category-select">
+                    <option value="all">All Categories</option>
+                </select>
+            </div>
             <button id="start-btn">Start Quiz</button>
+
+            <button id="admin-toggle" class="ghost">Show Admin</button>
+            <div id="admin-panel" class="admin-panel" hidden>
+                <h3>Question Editor</h3>
+                <label>Question
+                    <textarea id="admin-question" rows="2"></textarea>
+                </label>
+                <label>Category
+                    <input id="admin-category" type="text" placeholder="e.g. Geography">
+                </label>
+                <div class="admin-answers">
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="0" checked>
+                        <input type="text" id="admin-ans-0" placeholder="Answer 1">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="1">
+                        <input type="text" id="admin-ans-1" placeholder="Answer 2">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="2">
+                        <input type="text" id="admin-ans-2" placeholder="Answer 3">
+                    </div>
+                    <div class="admin-answer-row">
+                        <input type="radio" name="admin-correct" value="3">
+                        <input type="text" id="admin-ans-3" placeholder="Answer 4">
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button id="add-question-btn">Add Question</button>
+                </div>
+                <hr>
+                <h4>Existing Questions</h4>
+                <ul id="question-list" class="question-list"></ul>
+                <div class="admin-remove">
+                    <input id="admin-remove-category" type="text" placeholder="Category to remove">
+                    <button id="remove-by-category-btn">Remove By Category</button>
+                </div>
+            </div>
         </div>
         <div class="screen" id="quiz-screen">
             <div class="quiz-header">
