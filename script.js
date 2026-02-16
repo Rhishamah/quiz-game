@@ -208,6 +208,16 @@ if (categorySelect) {
 }
 restartButton.addEventListener("click", restartQuiz);
 
+// Shuffle array using Fisher-Yates algorithm
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 function startQuiz() {
     // reset vars
     currentQuestionIndex = 0;
@@ -232,6 +242,9 @@ function startQuiz() {
         return;
     }
 
+    // Shuffle questions for variety
+    filteredQuestions = shuffleArray(filteredQuestions);
+
     totalQuestionsSpan.textContent = filteredQuestions.length;
     maxScoreSpan.textContent = filteredQuestions.length;
 
@@ -252,7 +265,10 @@ function showQuestion() {
     //answer container
     answersContainer.innerHTML = "";
 
-    currentQuestion.answers.forEach(answer => {
+    // Shuffle answers for this question
+    const shuffledAnswers = shuffleArray(currentQuestion.answers);
+
+    shuffledAnswers.forEach(answer => {
         const button = document.createElement("button");
         button.textContent = answer.text;
         button.classList.add("answer-btn");
