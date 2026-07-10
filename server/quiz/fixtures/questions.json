@@ -1,0 +1,103 @@
+[
+  {"model": "quiz.category", "pk": 1, "fields": {"name": "Geography"}},
+  {"model": "quiz.category", "pk": 2, "fields": {"name": "Science"}},
+  {"model": "quiz.category", "pk": 3, "fields": {"name": "Programming"}},
+  {"model": "quiz.category", "pk": 4, "fields": {"name": "Art & History"}},
+
+  {"model": "quiz.question", "pk": 1,  "fields": {"text": "What is the capital of France?",                    "category": 1}},
+  {"model": "quiz.question", "pk": 2,  "fields": {"text": "Which planet is known as the red planet?",          "category": 2}},
+  {"model": "quiz.question", "pk": 3,  "fields": {"text": "What is the name of the largest ocean on Earth?",   "category": 1}},
+  {"model": "quiz.question", "pk": 4,  "fields": {"text": "Which programming language is the easiest to learn?", "category": 3}},
+  {"model": "quiz.question", "pk": 5,  "fields": {"text": "What is the capital of Japan?",                     "category": 1}},
+  {"model": "quiz.question", "pk": 6,  "fields": {"text": "Who painted the Mona Lisa?",                        "category": 4}},
+  {"model": "quiz.question", "pk": 7,  "fields": {"text": "What is the chemical symbol for gold?",             "category": 2}},
+  {"model": "quiz.question", "pk": 8,  "fields": {"text": "In which year did the Titanic sink?",               "category": 4}},
+  {"model": "quiz.question", "pk": 9,  "fields": {"text": "What does HTML stand for?",                         "category": 3}},
+  {"model": "quiz.question", "pk": 10, "fields": {"text": "What is the smallest country in the world?",        "category": 1}},
+  {"model": "quiz.question", "pk": 11, "fields": {"text": "How many bones are in the human body?",             "category": 2}},
+  {"model": "quiz.question", "pk": 12, "fields": {"text": "What is the capital of Australia?",                 "category": 1}},
+  {"model": "quiz.question", "pk": 13, "fields": {"text": "Who wrote 'Romeo and Juliet'?",                     "category": 4}},
+  {"model": "quiz.question", "pk": 14, "fields": {"text": "What is the speed of light in vacuum?",             "category": 2}},
+  {"model": "quiz.question", "pk": 15, "fields": {"text": "Which country is home to the Eiffel Tower?",        "category": 1}},
+  {"model": "quiz.question", "pk": 16, "fields": {"text": "What is the primary purpose of CSS in web development?", "category": 3}},
+
+  {"model": "quiz.answer", "pk": 1,  "fields": {"question": 1,  "text": "London",                              "is_correct": false}},
+  {"model": "quiz.answer", "pk": 2,  "fields": {"question": 1,  "text": "Berlin",                              "is_correct": false}},
+  {"model": "quiz.answer", "pk": 3,  "fields": {"question": 1,  "text": "Paris",                               "is_correct": true}},
+  {"model": "quiz.answer", "pk": 4,  "fields": {"question": 1,  "text": "Madrid",                              "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 5,  "fields": {"question": 2,  "text": "Mars",                                "is_correct": true}},
+  {"model": "quiz.answer", "pk": 6,  "fields": {"question": 2,  "text": "Jupiter",                             "is_correct": false}},
+  {"model": "quiz.answer", "pk": 7,  "fields": {"question": 2,  "text": "Saturn",                              "is_correct": false}},
+  {"model": "quiz.answer", "pk": 8,  "fields": {"question": 2,  "text": "Neptune",                             "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 9,  "fields": {"question": 3,  "text": "Pacific Ocean",                       "is_correct": true}},
+  {"model": "quiz.answer", "pk": 10, "fields": {"question": 3,  "text": "Atlantic Ocean",                      "is_correct": false}},
+  {"model": "quiz.answer", "pk": 11, "fields": {"question": 3,  "text": "Indian Ocean",                        "is_correct": false}},
+  {"model": "quiz.answer", "pk": 12, "fields": {"question": 3,  "text": "Arctic Ocean",                        "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 13, "fields": {"question": 4,  "text": "C++",                                 "is_correct": false}},
+  {"model": "quiz.answer", "pk": 14, "fields": {"question": 4,  "text": "JavaScript",                          "is_correct": false}},
+  {"model": "quiz.answer", "pk": 15, "fields": {"question": 4,  "text": "Python",                              "is_correct": true}},
+  {"model": "quiz.answer", "pk": 16, "fields": {"question": 4,  "text": "C",                                   "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 17, "fields": {"question": 5,  "text": "Osaka",                               "is_correct": false}},
+  {"model": "quiz.answer", "pk": 18, "fields": {"question": 5,  "text": "Tokyo",                               "is_correct": true}},
+  {"model": "quiz.answer", "pk": 19, "fields": {"question": 5,  "text": "Kyoto",                               "is_correct": false}},
+  {"model": "quiz.answer", "pk": 20, "fields": {"question": 5,  "text": "Hiroshima",                           "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 21, "fields": {"question": 6,  "text": "Van Gogh",                            "is_correct": false}},
+  {"model": "quiz.answer", "pk": 22, "fields": {"question": 6,  "text": "Leonardo da Vinci",                   "is_correct": true}},
+  {"model": "quiz.answer", "pk": 23, "fields": {"question": 6,  "text": "Michelangelo",                        "is_correct": false}},
+  {"model": "quiz.answer", "pk": 24, "fields": {"question": 6,  "text": "Raphael",                             "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 25, "fields": {"question": 7,  "text": "Go",                                  "is_correct": false}},
+  {"model": "quiz.answer", "pk": 26, "fields": {"question": 7,  "text": "Gd",                                  "is_correct": false}},
+  {"model": "quiz.answer", "pk": 27, "fields": {"question": 7,  "text": "Au",                                  "is_correct": true}},
+  {"model": "quiz.answer", "pk": 28, "fields": {"question": 7,  "text": "Ag",                                  "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 29, "fields": {"question": 8,  "text": "1912",                                "is_correct": true}},
+  {"model": "quiz.answer", "pk": 30, "fields": {"question": 8,  "text": "1905",                                "is_correct": false}},
+  {"model": "quiz.answer", "pk": 31, "fields": {"question": 8,  "text": "1920",                                "is_correct": false}},
+  {"model": "quiz.answer", "pk": 32, "fields": {"question": 8,  "text": "1898",                                "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 33, "fields": {"question": 9,  "text": "Hyper Text Markup Language",          "is_correct": true}},
+  {"model": "quiz.answer", "pk": 34, "fields": {"question": 9,  "text": "High Tech Modern Language",           "is_correct": false}},
+  {"model": "quiz.answer", "pk": 35, "fields": {"question": 9,  "text": "Home Tool Markup Language",           "is_correct": false}},
+  {"model": "quiz.answer", "pk": 36, "fields": {"question": 9,  "text": "Hyperlinks and Text Markup Language", "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 37, "fields": {"question": 10, "text": "Monaco",                              "is_correct": false}},
+  {"model": "quiz.answer", "pk": 38, "fields": {"question": 10, "text": "San Marino",                          "is_correct": false}},
+  {"model": "quiz.answer", "pk": 39, "fields": {"question": 10, "text": "Vatican City",                        "is_correct": true}},
+  {"model": "quiz.answer", "pk": 40, "fields": {"question": 10, "text": "Liechtenstein",                       "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 41, "fields": {"question": 11, "text": "186",                                 "is_correct": false}},
+  {"model": "quiz.answer", "pk": 42, "fields": {"question": 11, "text": "206",                                 "is_correct": true}},
+  {"model": "quiz.answer", "pk": 43, "fields": {"question": 11, "text": "226",                                 "is_correct": false}},
+  {"model": "quiz.answer", "pk": 44, "fields": {"question": 11, "text": "196",                                 "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 45, "fields": {"question": 12, "text": "Sydney",                              "is_correct": false}},
+  {"model": "quiz.answer", "pk": 46, "fields": {"question": 12, "text": "Melbourne",                           "is_correct": false}},
+  {"model": "quiz.answer", "pk": 47, "fields": {"question": 12, "text": "Canberra",                            "is_correct": true}},
+  {"model": "quiz.answer", "pk": 48, "fields": {"question": 12, "text": "Brisbane",                            "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 49, "fields": {"question": 13, "text": "Jane Austen",                         "is_correct": false}},
+  {"model": "quiz.answer", "pk": 50, "fields": {"question": 13, "text": "William Shakespeare",                 "is_correct": true}},
+  {"model": "quiz.answer", "pk": 51, "fields": {"question": 13, "text": "Charles Dickens",                     "is_correct": false}},
+  {"model": "quiz.answer", "pk": 52, "fields": {"question": 13, "text": "Mark Twain",                          "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 53, "fields": {"question": 14, "text": "300,000 km/s",                        "is_correct": true}},
+  {"model": "quiz.answer", "pk": 54, "fields": {"question": 14, "text": "150,000 km/s",                        "is_correct": false}},
+  {"model": "quiz.answer", "pk": 55, "fields": {"question": 14, "text": "450,000 km/s",                        "is_correct": false}},
+  {"model": "quiz.answer", "pk": 56, "fields": {"question": 14, "text": "200,000 km/s",                        "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 57, "fields": {"question": 15, "text": "Germany",                             "is_correct": false}},
+  {"model": "quiz.answer", "pk": 58, "fields": {"question": 15, "text": "France",                              "is_correct": true}},
+  {"model": "quiz.answer", "pk": 59, "fields": {"question": 15, "text": "Belgium",                             "is_correct": false}},
+  {"model": "quiz.answer", "pk": 60, "fields": {"question": 15, "text": "Italy",                               "is_correct": false}},
+
+  {"model": "quiz.answer", "pk": 61, "fields": {"question": 16, "text": "Adding interactivity",                "is_correct": false}},
+  {"model": "quiz.answer", "pk": 62, "fields": {"question": 16, "text": "Storing data",                        "is_correct": false}},
+  {"model": "quiz.answer", "pk": 63, "fields": {"question": 16, "text": "Styling and layout",                  "is_correct": true}},
+  {"model": "quiz.answer", "pk": 64, "fields": {"question": 16, "text": "Server management",                   "is_correct": false}}
+]

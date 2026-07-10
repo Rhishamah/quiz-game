@@ -16,377 +16,169 @@ const progressBar = document.getElementById("progress");
 
 const categorySelect = document.getElementById("category-select");
 const playerNameInput = document.getElementById("player-name");
-const STORAGE_KEY_CATEGORY = 'quizCategory';
-const STORAGE_KEY_QUESTIONS = 'quizQuestions';
-
-// Default questions
-const DEFAULT_QUESTIONS = [
-    {
-        question: "what is the capital of france ?",
-        category: "Geography",
-        answers: [
-            { text: "London", correct: false },
-            { text: "Berlin", correct: false },
-            { text: "Paris", correct: true },
-            { text: "Madrid", correct: false },
-        ],
-    },
-    {
-        question: "Which planet is known as the red planet?",
-        category: "Science",
-        answers: [
-            { text: "Mars", correct: true },
-            { text: "Jupiter", correct: false },
-            { text: "Saturn", correct: false },
-            { text: "Neptune", correct: false },
-        ],
-    },
-    {
-        question: "What is the name of the largest ocean on Earth ?",
-        category: "Geography",
-        answers: [
-            { text: "Pacific ocean", correct: true },
-            { text: "Atlantic ocean", correct: false },
-            { text: "Indian ocean", correct: false },
-            { text: "Arctic ocean", correct: false },
-        ],
-    },
-    {
-        question: "Which programming language is the easiest to learn ?",
-        category: "Programming",
-        answers: [
-            { text: "C++", correct: false },
-            { text: "Javascript", correct: false },
-            { text: "Python", correct: true },
-            { text: "C", correct: false },
-        ],
-    },
-    {
-        question: "What is the capital of Japan?",
-        category: "Geography",
-        answers: [
-            { text: "Osaka", correct: false },
-            { text: "Tokyo", correct: true },
-            { text: "Kyoto", correct: false },
-            { text: "Hiroshima", correct: false },
-        ],
-    },
-    {
-        question: "Who painted the Mona Lisa?",
-        category: "Art & History",
-        answers: [
-            { text: "Van Gogh", correct: false },
-            { text: "Leonardo da Vinci", correct: true },
-            { text: "Michelangelo", correct: false },
-            { text: "Raphael", correct: false },
-        ],
-    },
-    {
-        question: "What is the chemical symbol for gold?",
-        category: "Science",
-        answers: [
-            { text: "Go", correct: false },
-            { text: "Gd", correct: false },
-            { text: "Au", correct: true },
-            { text: "Ag", correct: false },
-        ],
-    },
-    {
-        question: "In which year did the Titanic sink?",
-        category: "Art & History",
-        answers: [
-            { text: "1912", correct: true },
-            { text: "1905", correct: false },
-            { text: "1920", correct: false },
-            { text: "1898", correct: false },
-        ],
-    },
-    {
-        question: "What does HTML stand for?",
-        category: "Programming",
-        answers: [
-            { text: "Hyper Text Markup Language", correct: true },
-            { text: "High Tech Modern Language", correct: false },
-            { text: "Home Tool Markup Language", correct: false },
-            { text: "Hyperlinks and Text Markup Language", correct: false },
-        ],
-    },
-    {
-        question: "What is the smallest country in the world?",
-        category: "Geography",
-        answers: [
-            { text: "Monaco", correct: false },
-            { text: "San Marino", correct: false },
-            { text: "Vatican City", correct: true },
-            { text: "Liechtenstein", correct: false },
-        ],
-    },
-    {
-        question: "How many bones are in the human body?",
-        category: "Science",
-        answers: [
-            { text: "186", correct: false },
-            { text: "206", correct: true },
-            { text: "226", correct: false },
-            { text: "196", correct: false },
-        ],
-    },
-    {
-        question: "What is the capital of Australia?",
-        category: "Geography",
-        answers: [
-            { text: "Sydney", correct: false },
-            { text: "Melbourne", correct: false },
-            { text: "Canberra", correct: true },
-            { text: "Brisbane", correct: false },
-        ],
-    },
-    {
-        question: "Who wrote 'Romeo and Juliet'?",
-        category: "Art & History",
-        answers: [
-            { text: "Jane Austen", correct: false },
-            { text: "William Shakespeare", correct: true },
-            { text: "Charles Dickens", correct: false },
-            { text: "Mark Twain", correct: false },
-        ],
-    },
-    {
-        question: "What is the speed of light in vacuum?",
-        category: "Science",
-        answers: [
-            { text: "300,000 km/s", correct: true },
-            { text: "150,000 km/s", correct: false },
-            { text: "450,000 km/s", correct: false },
-            { text: "200,000 km/s", correct: false },
-        ],
-    },
-    {
-        question: "Which country is home to the Eiffel Tower?",
-        category: "Geography",
-        answers: [
-            { text: "Germany", correct: false },
-            { text: "France", correct: true },
-            { text: "Belgium", correct: false },
-            { text: "Italy", correct: false },
-        ],
-    },
-    {
-        question: "What is the primary purpose of CSS in web development?",
-        category: "Programming",
-        answers: [
-            { text: "Adding interactivity", correct: false },
-            { text: "Storing data", correct: false },
-            { text: "Styling and layout", correct: true },
-            { text: "Server management", correct: false },
-        ],
-    },
-];
-
-// Load questions from localStorage if available, otherwise use defaults
-const quizQuestions = JSON.parse(localStorage.getItem(STORAGE_KEY_QUESTIONS)) || DEFAULT_QUESTIONS;
-
 let filteredQuestions = [];
 //quiz state vars
 let currentQuestionIndex = 0;
 let score = 0;
 let answersDisabled = false;
 
-// populate category options and initialize counts
+// populate category options from API
 populateCategoryOptions();
 
 //event listeners
 startButton.addEventListener("click", startQuiz);
-if (categorySelect) {
-    categorySelect.addEventListener("change", () => {
-        try {
-            localStorage.setItem(STORAGE_KEY_CATEGORY, categorySelect.value);
-        } catch (e) {
-            // ignore storage errors
-        }
-        updateCategoryCount();
-    });
-}
 restartButton.addEventListener("click", restartQuiz);
 
 // Shuffle array using Fisher-Yates algorithm
 function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 async function startQuiz() {
-    currentQuestionIndex = 0;
-    score = 0;
-    scoreSpan.textContent = 0;
-    startScreen.classList.remove("active");
-    quizScreen.classList.add("active");
+  currentQuestionIndex = 0;
+  score = 0;
+  scoreSpan.textContent = 0;
+  startScreen.classList.remove("active");
+  quizScreen.classList.add("active");
 
-    const selected = categorySelect ? categorySelect.value : "all";
-    try {
-        filteredQuestions = await fetchQuestions(selected === "all" ? null : selected);
-    } catch (e) {
-        // fallback to local questions if API unavailable
-        filteredQuestions = selected === "all" ? [...quizQuestions] : quizQuestions.filter(q => q.category === selected);
-    }
+  const selected = categorySelect ? categorySelect.value : "all";
+  filteredQuestions = await fetchQuestions(selected === "all" ? null : selected);
 
-    if (filteredQuestions.length === 0) {
-        alert("No questions available for the selected category.");
-        quizScreen.classList.remove("active");
-        startScreen.classList.add("active");
-        return;
-    }
+  if (filteredQuestions.length === 0) {
+    alert("No questions available for the selected category.");
+    quizScreen.classList.remove("active");
+    startScreen.classList.add("active");
+    return;
+  }
 
-    filteredQuestions = shuffleArray(filteredQuestions);
-    totalQuestionsSpan.textContent = filteredQuestions.length;
-    maxScoreSpan.textContent = filteredQuestions.length;
+  filteredQuestions = shuffleArray(filteredQuestions);
+  totalQuestionsSpan.textContent = filteredQuestions.length;
+  maxScoreSpan.textContent = filteredQuestions.length;
 
-    showQuestion();
+  showQuestion();
 }
 function showQuestion() {
-    // reset state
-    answersDisabled = false;
-    const currentQuestion = filteredQuestions[currentQuestionIndex];
+  // reset state
+  answersDisabled = false;
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
 
-    currentQuestionSpan.textContent = currentQuestionIndex + 1;
+  currentQuestionSpan.textContent = currentQuestionIndex + 1;
 
-    const progressPercent = (currentQuestionIndex / filteredQuestions.length) * 100;
-    progressBar.style.width = progressPercent + "%";
-    //questions
-    questionText.textContent = currentQuestion.question;
+  const progressPercent =
+    (currentQuestionIndex / filteredQuestions.length) * 100;
+  progressBar.style.width = progressPercent + "%";
+  //questions
+  questionText.textContent = currentQuestion.text;
 
-    //answer container
-    answersContainer.innerHTML = "";
+  //answer container
+  answersContainer.innerHTML = "";
 
-    // Shuffle answers for this question
-    const shuffledAnswers = shuffleArray(currentQuestion.answers);
+  // Shuffle answers for this question
+  const shuffledAnswers = shuffleArray(currentQuestion.answers);
 
-    shuffledAnswers.forEach(answer => {
-        const button = document.createElement("button");
-        button.textContent = answer.text;
-        button.classList.add("answer-btn");
-        //datasets allow you to store custom data
-        button.dataset.correct = answer.is_correct ?? answer.correct;
-        //for selecting the right answers ish
-        button.addEventListener("click", selectAnswer);
+  shuffledAnswers.forEach((answer) => {
+    const button = document.createElement("button");
+    button.textContent = answer.text;
+    button.classList.add("answer-btn");
+    //datasets allow you to store custom data
+    button.dataset.correct = answer.is_correct;
+    //for selecting the right answers ish
+    button.addEventListener("click", selectAnswer);
 
-        answersContainer.appendChild(button);
-
-    });
+    answersContainer.appendChild(button);
+  });
 }
 
 function selectAnswer(event) {
-    //optimization check
-    if (answersDisabled) return;
+  //optimization check
+  if (answersDisabled) return;
 
-    answersDisabled = true;
+  answersDisabled = true;
 
-    //to get selected button
-    const selectedButton = event.target;
-    const isCorrect = selectedButton.dataset.correct === "true";
+  //to get selected button
+  const selectedButton = event.target;
+  const isCorrect = selectedButton.dataset.correct === "true";
 
-
-    //for progress bar feedback
-    Array.from(answersContainer.children).forEach(button => {
-        if (button.dataset.correct === "true") {
-            button.classList.add("correct");
-        } else {
-            button.classList.add("incorrect");
-        }
-    });
-    //for  updating scores
-    if (isCorrect) {
-        score++;
-        scoreSpan.textContent = score;
+  //for progress bar feedback
+  Array.from(answersContainer.children).forEach((button) => {
+    if (button.dataset.correct === "true") {
+      button.classList.add("correct");
+    } else {
+      button.classList.add("incorrect");
     }
+  });
+  //for  updating scores
+  if (isCorrect) {
+    score++;
+    scoreSpan.textContent = score;
+  }
 
-    //pause between questions
-    setTimeout(() => {
-        currentQuestionIndex++;
+  //pause between questions
+  setTimeout(() => {
+    currentQuestionIndex++;
 
-        //checking for more questions or if the quiz is over
-        if (currentQuestionIndex < filteredQuestions.length) {
-            showQuestion();
-        } else {
-            showResults();
-        }
-    }, 1000);
+    //checking for more questions or if the quiz is over
+    if (currentQuestionIndex < filteredQuestions.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1000);
 }
 async function showResults() {
-    quizScreen.classList.remove("active");
-    resultScreen.classList.add("active");
+  quizScreen.classList.remove("active");
+  resultScreen.classList.add("active");
 
-    finalScoreSpan.textContent = score;
+  finalScoreSpan.textContent = score;
 
-    const playerName = playerNameInput ? playerNameInput.value.trim() : '';
-    if (playerName) {
-        try {
-            await submitScore(playerName, score, filteredQuestions.length);
-        } catch (e) {
-            // score submission failed silently
-        }
+  const playerName = playerNameInput ? playerNameInput.value.trim() : "";
+  if (playerName) {
+    try {
+      await submitScore(playerName, score, filteredQuestions.length);
+    } catch (e) {
+      // score submission failed silently
     }
+  }
 
-    const percentage = (score / filteredQuestions.length) * 100;
+  const percentage = (score / filteredQuestions.length) * 100;
 
-    if (percentage === 100) {
-        resultMessage.textContent = "Great job! You're a genius";
-    } else if (percentage >= 80) {
-        resultMessage.textContent = "Great job! You know your stuff!";
-    }
-    else if (percentage >= 60) {
-        resultMessage.textContent = "Good effort! keep learning!";
-    }
-    else if (percentage >= 40) {
-        resultMessage.textContent = "Not bad! Try again to improve!";
-    }
-    else {
-        resultMessage.textContent = "Keep studying! you'll get better!";
-    }
+  if (percentage === 100) {
+    resultMessage.textContent = "Great job! You're a genius";
+  } else if (percentage >= 80) {
+    resultMessage.textContent = "Great job! You know your stuff!";
+  } else if (percentage >= 60) {
+    resultMessage.textContent = "Good effort! keep learning!";
+  } else if (percentage >= 40) {
+    resultMessage.textContent = "Not bad! Try again to improve!";
+  } else {
+    resultMessage.textContent = "Keep studying! you'll get better!";
+  }
 }
 function restartQuiz() {
-    resultScreen.classList.remove("active");
+  resultScreen.classList.remove("active");
 
-    startQuiz();
+  startQuiz();
 }
 
-function populateCategoryOptions() {
-    if (!categorySelect) return;
-    const categories = Array.from(new Set(quizQuestions.map(q => q.category))).sort();
-    // remove existing non-'all' options
-    const total = quizQuestions.length;
-    categorySelect.innerHTML = `<option value="all">All Categories (${total})</option>`;
-    categories.forEach(cat => {
-        const count = quizQuestions.filter(q => q.category === cat).length;
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = `${cat} (${count})`;
-        categorySelect.appendChild(opt);
+async function populateCategoryOptions() {
+  if (!categorySelect) return;
+  try {
+    const questions = await fetchQuestions();
+    const categories = [...new Set(questions.map((q) => q.category))].sort();
+    categorySelect.innerHTML = `<option value="all">All Categories (${questions.length})</option>`;
+    categories.forEach((cat) => {
+      const count = questions.filter((q) => q.category === cat).length;
+      const opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = `${cat} (${count})`;
+      categorySelect.appendChild(opt);
     });
-    // restore previously selected category if present
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY_CATEGORY);
-        if (saved) {
-            const optionExists = Array.from(categorySelect.options).some(o => o.value === saved);
-            if (optionExists) categorySelect.value = saved;
-        }
-    } catch (e) {
-        // ignore storage errors
-    }
-
-    updateCategoryCount();
-}
-
-function updateCategoryCount() {
-    if (!categorySelect) return;
-    const selected = categorySelect.value;
-    const count = selected === 'all' ? quizQuestions.length : quizQuestions.filter(q => q.category === selected).length;
-    totalQuestionsSpan.textContent = count;
-    maxScoreSpan.textContent = count;
-    // disable start if no questions
-    startButton.disabled = count === 0;
+  } catch (e) {
+    categorySelect.innerHTML = '<option value="all">All Categories</option>';
+  }
 }
