@@ -13,6 +13,8 @@
         <h1>Quiz Time!</h1>
         <p>Test your knowledge with these fun questions</p>
         <div class="category-select">
+          <label for="player-name">Your name:</label>
+          <input type="text" id="player-name" placeholder="Enter your name" maxlength="50" />
           <label for="category-select">Choose category:</label>
           <select id="category-select">
             <option value="all">All Categories</option>
@@ -50,6 +52,7 @@
         <button id="restart-btn">Restart Quiz</button>
       </div>
     </div>
+    <script src="js/api.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

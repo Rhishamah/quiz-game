@@ -15,6 +15,7 @@ const restartButton = document.getElementById("restart-btn");
 const progressBar = document.getElementById("progress");
 
 const categorySelect = document.getElementById("category-select");
+const playerNameInput = document.getElementById("player-name");
 const STORAGE_KEY_CATEGORY = 'quizCategory';
 const STORAGE_KEY_QUESTIONS = 'quizQuestions';
 
@@ -218,33 +219,29 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-function startQuiz() {
-    // reset vars
+async function startQuiz() {
     currentQuestionIndex = 0;
     score = 0;
     scoreSpan.textContent = 0;
     startScreen.classList.remove("active");
     quizScreen.classList.add("active");
 
-    // determine selected category and build filtered questions
     const selected = categorySelect ? categorySelect.value : "all";
-    if (selected === "all") {
-        filteredQuestions = [...quizQuestions];
-    } else {
-        filteredQuestions = quizQuestions.filter(q => q.category === selected);
+    try {
+        filteredQuestions = await fetchQuestions(selected === "all" ? null : selected);
+    } catch (e) {
+        // fallback to local questions if API unavailable
+        filteredQuestions = selected === "all" ? [...quizQuestions] : quizQuestions.filter(q => q.category === selected);
     }
 
     if (filteredQuestions.length === 0) {
         alert("No questions available for the selected category.");
-        // return to start screen
         quizScreen.classList.remove("active");
         startScreen.classList.add("active");
         return;
     }
 
-    // Shuffle questions for variety
     filteredQuestions = shuffleArray(filteredQuestions);
-
     totalQuestionsSpan.textContent = filteredQuestions.length;
     maxScoreSpan.textContent = filteredQuestions.length;
 
@@ -273,7 +270,7 @@ function showQuestion() {
         button.textContent = answer.text;
         button.classList.add("answer-btn");
         //datasets allow you to store custom data
-        button.dataset.correct = answer.correct;
+        button.dataset.correct = answer.is_correct ?? answer.correct;
         //for selecting the right answers ish
         button.addEventListener("click", selectAnswer);
 
@@ -319,11 +316,20 @@ function selectAnswer(event) {
         }
     }, 1000);
 }
-function showResults() {
+async function showResults() {
     quizScreen.classList.remove("active");
     resultScreen.classList.add("active");
 
     finalScoreSpan.textContent = score;
+
+    const playerName = playerNameInput ? playerNameInput.value.trim() : '';
+    if (playerName) {
+        try {
+            await submitScore(playerName, score, filteredQuestions.length);
+        } catch (e) {
+            // score submission failed silently
+        }
+    }
 
     const percentage = (score / filteredQuestions.length) * 100;
 
