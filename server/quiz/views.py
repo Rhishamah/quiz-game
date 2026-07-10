@@ -15,8 +15,8 @@ class QuestionListView(ListAPIView):
         queryset = Question.objects.prefetch_related("answers")
         category = self.request.query_params.get('category')
         if category:
-            queryset = queryset.filter(category_name=category)
-            return queryset
+            queryset = queryset.filter(category__name=category)
+        return queryset
         
         
 class LeaderboardView(APIView):

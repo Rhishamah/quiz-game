@@ -1,8 +1,10 @@
 const API_BASE = "http://127.0.0.1:8000/api";
+const ALLOWED_CATEGORIES = ["Geography", "Science", "Programming", "Art & History"];
 
 async function fetchQuestions(category = null) {
-  const url = category
-    ? `${API_BASE}/questions/?category=${encodeURIComponent(category)}`
+  const validCategory = category && ALLOWED_CATEGORIES.includes(category) ? category : null;
+  const url = validCategory
+    ? `${API_BASE}/questions/?category=${encodeURIComponent(validCategory)}`
     : `${API_BASE}/questions/`;
   const response = await fetch(url);
   if (!response.ok) throw new Error("Failed to fetch questions");

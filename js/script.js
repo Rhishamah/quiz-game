@@ -16,6 +16,7 @@ const progressBar = document.getElementById("progress");
 
 const categorySelect = document.getElementById("category-select");
 const playerNameInput = document.getElementById("player-name");
+const errorMessage = document.getElementById("error-message");
 let filteredQuestions = [];
 //quiz state vars
 let currentQuestionIndex = 0;
@@ -50,11 +51,12 @@ async function startQuiz() {
   filteredQuestions = await fetchQuestions(selected === "all" ? null : selected);
 
   if (filteredQuestions.length === 0) {
-    alert("No questions available for the selected category.");
+    errorMessage.textContent = "No questions available for the selected category.";
     quizScreen.classList.remove("active");
     startScreen.classList.add("active");
     return;
   }
+  errorMessage.textContent = "";
 
   filteredQuestions = shuffleArray(filteredQuestions);
   totalQuestionsSpan.textContent = filteredQuestions.length;
